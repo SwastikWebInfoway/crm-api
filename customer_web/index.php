@@ -8,8 +8,8 @@
 	$method		= ($method == 'query') ? 'user_query' : $method;
 
 	if(!file_exists(ROOT_CLASS .VERSION."/class." . strtolower($class) . ".php")){ // If no class file found, return error
-		$myrai->api_status 	= 0;
-		$myrai->api_message	= "Invalid end point";
+		$helper->api_status 	= 0;
+		$helper->api_message	= "Invalid end point";
 	}else{
 		
 		require_once(ROOT_CLASS.VERSION."/class." . strtolower($class) . ".php");
@@ -19,11 +19,17 @@
 			$helper->api_message	= "Invalid method";
 		}else{ 
 			
-			$API = new $class("JSON_ARRAY", $pdo); // Create class instance
-			$API->{$method}(); // call method
-			echo $API->response(); // Final response
-			exit; // Return from here since the required class and its method have been executed				
-			
+			$data = $helper->validateRequest(); // Validate token
+			if(!empty($data) || $class == 'login'){
+				// print_r($helper->requestData);exit;
+				$API = new $class("JSON_ARRAY", $pdo); // Create class instance
+				$API->{$method}(); // call method
+				echo $API->response(); // Final response
+				exit; // Return from here since the required class and its method have been executed			
+			}else{
+				$helper->api_status 	= 0;
+				$helper->api_message	= "Invalid Token";
+			}
 		}
 	}
 

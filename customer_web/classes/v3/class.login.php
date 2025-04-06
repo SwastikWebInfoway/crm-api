@@ -19,6 +19,8 @@
                 $this->api_message = 'l_password_required';
             }else{
 
+                require_once(ROOT_CLASS."/".VERSION."/class.jwt.php");
+                $Jwt = new JwtHandler();
                 
                 $user = $this->getTableData(['id','client_id','firstname','lastname','email','phonenumber','profile_image','address','role'],'user',['email' => $email, 'password' => $password],1);
 
@@ -26,8 +28,10 @@
                     $this->api_status = 0;
                     $this->api_message = 'l_email_password_invalid';
                 }else{
+                    $token = $Jwt->createToken(['user_id' => $user['id'], 'client_id' => $user['client_id']]);
                     $this->api_status = 1;
-                    $this->api_data = $user;
+                    $this->api_data['details'] = $user;
+                    $this->api_data['token'] = $token;
                 }
             }
 		}
