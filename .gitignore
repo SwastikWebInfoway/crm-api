@@ -3,6 +3,7 @@
 # Dependency directories
 /vendor/
 /composer.phar
+/uploads/*
 
 # Environment files
 .env

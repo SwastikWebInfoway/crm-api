@@ -168,4 +168,33 @@ class Helper extends Database
 		
 		return $headers;
 	}
+
+	public function validateMethod($method = ''){
+		
+		if($_SERVER['REQUEST_METHOD'] != $method){
+			$this->api_status = 0;
+			$this->api_message = 'Invalid request method';
+			return false;
+		}else{
+			return true;
+		}
+		
+	}
+
+	public function uploadFile($file, $uploadDir = '../uploads/') {
+
+		$uploadDir = '../uploads/' . $uploadDir.'/';
+		if (!is_dir($uploadDir)) {
+			mkdir($uploadDir, 0755, true);
+		}
+		if ($file['error'] !== UPLOAD_ERR_OK) {
+			return false;
+		}
+		$extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+		$uniqueName = md5(uniqid(rand(), true)) . '.' . $extension;
+		$destination = $uploadDir . $uniqueName;
+		if (move_uploaded_file($file['tmp_name'], $destination)) {
+			return $uniqueName;
+		} 
+	}
 }
