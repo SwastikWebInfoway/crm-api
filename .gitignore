@@ -1,0 +1,52 @@
+# .gitignore for PHP project
+
+# Dependency directories
+/vendor/
+/composer.phar
+/uploads/*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs and cache
+/storage/*.log
+/storage/framework/cache/*
+/storage/framework/views/*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local development files
+docker-compose.override.yml
+
+# Composer files (except lock file which should be committed)
+composer.lock
+
+# Testing files
+.phpunit.result.cache
+/coverage/
+
+# Build files
+/build/
+/dist/
+
+# OS generated files
+ehthumbs.db
+[Tt]humbs.db
+*.stackdump
+
+# Debug files
+*.log
+*.sqlite
+*.sqlite-journal
+*.sublime-workspace
+*.sublime-project

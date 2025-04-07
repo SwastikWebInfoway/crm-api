@@ -9,36 +9,14 @@ class Helper extends Database
 	public $responseReturn;
 	public $responseType;
 	public $sql;
-	public $sqlBind = [];
-	public $mysqlTimezone;
-	public $mysqlDatePattern 			= "%m/%d/%Y";
-	public $mysqlDatePattern_WithTime 	= "%m-%d-%Y %h:%i %p";
-	public $mysqlPage_Size 				= 10;
-	public $paginationLength			= 10;
-	public $validAttachments;
-	public $myrHelpers;
+	public $sqlBind;
+	public $requestData;
 
 	// General & Default Methods/Functions - START
 
 	public function __construct($respType = "PHP_ARRAY")
 	{
 		parent::__construct();
-
-		// Valid file extensions
-		$this->validAttachments 	= array();
-		$this->validAttachments[] 	= "txt";
-		$this->validAttachments[]	= "doc";
-		$this->validAttachments[]	= "docx";
-		$this->validAttachments[]	= "xls";
-		$this->validAttachments[]	= "xlsx";
-		$this->validAttachments[]	= "ppt";
-		$this->validAttachments[]	= "pptx";
-		$this->validAttachments[]	= "odt";
-		$this->validAttachments[]	= "jpg";
-		$this->validAttachments[]	= "jpeg";
-		$this->validAttachments[]	= "png";
-		$this->validAttachments[]	= "pdf";
-
 		// Response
 		$this->responseType		= $respType;
 		$this->api_status 	= 0;
@@ -47,6 +25,8 @@ class Helper extends Database
 		$this->api_extra	= array();
 		$this->responseError	= '';
 		$this->responseReturn	= array();
+		$this->sqlBind 	= array();
+		$this->requestData = $GLOBALS['app_request'];
 	}
 
 	public function response()
@@ -129,6 +109,92 @@ class Helper extends Database
 			$this->query();
 			$this->execute();
 		}
+	}
 
+	public function validateRequest(){
+
+		require_once(ROOT_CLASS."/".VERSION."/class.jwt.php");		
+		$headers = $this->getAuthorizationHeader();
+		$jwt = new JwtHandler();
+
+		if (isset($headers)) {
+			$token = str_replace('Bearer ', '', $headers);
+			$decoded = $jwt->verifyToken($token);
+
+			if ($decoded) {
+				$data = $jwt->getValueFromToken($token);
+				if(!empty($data)){
+					$data = json_decode(json_encode($data), true);
+					$GLOBALS['app_request'] = $data;
+					return $data;
+				}else{
+					$this->api_status = 0;
+					$this->api_message = 'Invalid token';
+					return false;
+				}
+			} else {
+				$this->api_status = 0;
+				$this->api_message = 'Invalid token';
+				return false;
+			}
+		} else {
+			$this->api_status = 0;
+			$this->api_message = 'Authorization header not found';
+			return false;
+		}
+	}
+
+	public function getAuthorizationHeader() {
+
+		$headers = null;
+		
+		if (isset($_SERVER['Authorization'])) {
+			$headers = trim($_SERVER['Authorization']);
+		} 
+		elseif (isset($_SERVER['HTTP_AUTHORIZATION'])) { // Nginx or fast CGI
+			$headers = trim($_SERVER['HTTP_AUTHORIZATION']);
+		} 
+		elseif (function_exists('apache_request_headers')) {
+			$requestHeaders = apache_request_headers();
+			$requestHeaders = array_combine(
+				array_map('ucwords', array_keys($requestHeaders)),
+				array_values($requestHeaders)
+			);
+			
+			if (isset($requestHeaders['Authorization'])) {
+				$headers = trim($requestHeaders['Authorization']);
+			}
+		}
+		
+		return $headers;
+	}
+
+	public function validateMethod($method = ''){
+		
+		if($_SERVER['REQUEST_METHOD'] != $method){
+			$this->api_status = 0;
+			$this->api_message = 'Invalid request method';
+			return false;
+		}else{
+			return true;
+		}
+		
+	}
+
+	public function uploadFile($file, $uploadDir = '../uploads/') {
+
+		$uploadDir = '../uploads/' . $uploadDir.'/';
+		if (!is_dir($uploadDir)) {
+			mkdir($uploadDir, 0755, true);
+		}
+		if ($file['error'] !== UPLOAD_ERR_OK) {
+			return false;
+		}
+		$extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+		$uniqueName = md5(uniqid(rand(), true)) . '.' . $extension;
+		$destination = $uploadDir . $uniqueName;
+		if (move_uploaded_file($file['tmp_name'], $destination)) {
+			return $uniqueName;
+		} 
 	}
 }

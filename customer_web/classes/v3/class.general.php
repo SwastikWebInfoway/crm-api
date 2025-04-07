@@ -11,6 +11,6 @@
 			$this->query();
 			$data = $this->single();
 
-			$this->api_data = $data;
+			$this->api_data = $this->requestData;
 		}
 	}
