@@ -85,12 +85,16 @@ class User extends Helper{
 
         // Check if user exists
         $userExists = $this->getTableData(['id','client_id','firstname','lastname','email','phonenumber','profile_image','address','role'],'user',['client_id' => $userId]);
-        
+        foreach ($userExists as  $key => $user) {
+            $userExists[$key]['profile_image_url'] = IMAGE_URL.'/user/'.$user['id'].'/'.$user['profile_image'];
+        }
+
         if(empty($userExists)){
+            http_response_code(204);
             $this->api_status = 0;
             $this->api_message = 'l_user_not_found';
         }else{
-            
+            http_response_code(200);
             $this->api_status = 1;
             $this->api_data = $userExists;
         }
