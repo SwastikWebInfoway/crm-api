@@ -78,27 +78,21 @@ class User extends Helper{
 
     public function get_user(){
 
+        if (!$this->validateMethod('GET')) return;
+
         $data = $_POST;
         $userId = $GLOBALS['app_request']['user_id'] ?? NULL;
 
-        if(empty($userId)){
-            $this->api_status = 0;
-            $this->api_message = 'l_user_id_required';
-        }else{
-
-            // Check if user exists
-            $userExists = $this->getTableData(['id','client_id','firstname','lastname','email','phonenumber','profile_image','address','role'],'user',['client_id' => $userId]);
-            
-            if(empty($userExists)){
-                $this->api_status = 0;
-                $this->api_message = 'l_user_not_found';
-            }else{
-               
-                $this->api_status = 1;
-                $this->api_data = $userExists;
-            }
-        }
+        // Check if user exists
+        $userExists = $this->getTableData(['id','client_id','firstname','lastname','email','phonenumber','profile_image','address','role'],'user',['client_id' => $userId]);
         
+        if(empty($userExists)){
+            $this->api_status = 0;
+            $this->api_message = 'l_user_not_found';
+        }else{
+            
+            $this->api_status = 1;
+            $this->api_data = $userExists;
+        }
     }
-
 }
