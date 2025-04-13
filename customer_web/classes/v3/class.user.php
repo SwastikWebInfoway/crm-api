@@ -7,6 +7,7 @@ class User extends Helper{
 
     public function add_user(){
 
+
         if (!$this->validateMethod('POST')) return;
 
         $data = $_POST;
@@ -18,7 +19,7 @@ class User extends Helper{
         $phonenumber = isset($data['phonenumber']) && !empty($data['phonenumber']) ? $data['phonenumber'] : NULL;
         $address = isset($data['address']) && !empty($data['address']) ? $data['address'] : NULL;
         $role = isset($data['role']) && !empty($data['role']) ? (int)$data['role'] : 3;
-        $userId = $GLOBALS['app_request']['user_id'] ?? NULL;
+        $userId = $GLOBALS['app_request']['client_id'] ?? NULL;
 
         if(empty($email)){
             http_response_code(400);
@@ -181,7 +182,7 @@ class User extends Helper{
         $loginUserRole = $this->requestData['role'] ?? NULL;
         $peopleId = $data['people_id'] ?? 0;
 
-        
+
         if($loginUserRole != 1){
             http_response_code(403);
             $this->api_status = 0;
