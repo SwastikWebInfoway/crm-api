@@ -35,7 +35,9 @@
                 }else{
                     http_response_code(200);
                     unset($user['password']);
-                    $token = $Jwt->createToken(['user_id' => $user['id'], 'client_id' => $user['client_id']]);
+                    $user['profile_image'] = IMAGE_URL.'/user/'.$user['id'].'/'.$user['profile_image'];
+
+                    $token = $Jwt->createToken(['user_id' => $user['id'], 'client_id' => $user['client_id'], 'role' => $user['role']]);
                     $this->api_status = 1;
                     $this->api_data['details'] = $user;
                     $this->api_data['token'] = $token;

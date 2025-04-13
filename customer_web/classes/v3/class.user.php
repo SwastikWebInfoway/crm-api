@@ -81,7 +81,7 @@ class User extends Helper{
         if (!$this->validateMethod('GET')) return;
 
         $data = $_POST;
-        $userId = $GLOBALS['app_request']['user_id'] ?? NULL;
+        $userId = $GLOBALS['app_request']['client_id'] ?? NULL;
 
         // Check if user exists
         $userExists = $this->getTableData(['id','client_id','firstname','lastname','email','phonenumber','profile_image','address','role'],'user',['client_id' => $userId]);
@@ -97,6 +97,108 @@ class User extends Helper{
             http_response_code(200);
             $this->api_status = 1;
             $this->api_data = $userExists;
+        }
+    }
+
+    public function update_user(){
+
+        if (!$this->validateMethod('POST')) return;
+
+        $data = $_POST;
+        $userId = $this->requestData['client_id'] ?? NULL;
+        $loginUserRole = $this->requestData['role'] ?? NULL;
+        $peopleId = $data['people_id'] ?? 0;
+        $password = isset($data['password']) && !empty($data['password']) ? $data['password'] : NULL;
+        $email = isset($data['email']) && !empty($data['email']) ? $data['email'] : NULL;
+        $firstname = isset($data['firstname']) && !empty($data['firstname']) ? $data['firstname'] : NULL;
+        $lastname = isset($data['lastname']) && !empty($data['lastname']) ? $data['lastname'] : NULL;
+        $role = isset($data['role']) && !empty($data['role']) ? $data['role'] : NULL;
+        $phonenumber = isset($data['phonenumber']) && !empty($data['phonenumber']) ? $data['phonenumber'] : NULL;
+        $address = isset($data['address']) && !empty($data['address']) ? $data['address'] : NULL;
+
+
+        if($loginUserRole != 1){
+            http_response_code(403);
+            $this->api_status = 0;
+            $this->api_message = 'l_user_not_authorized';
+        }else if($peopleId == 0){
+            http_response_code(400);
+            $this->api_status = 0;
+            $this->api_message = 'l_user_id_required';
+        }else{
+
+            if(!empty($email)){
+
+                $this->sql = 'SELECT `id` FROM `user` WHERE `email` = :email AND `id` != :id';
+                $this->sqlBind = [];
+                $this->sqlBind['email'] = $email;
+                $this->sqlBind['id'] = $peopleId;
+                $this->query();
+                $userExists = $this->single();
+                if($userExists){
+                    http_response_code(409);
+                    $this->api_status = 0;
+                    $this->api_message = 'l_user_already_exists';
+                    return;
+                }else{
+                    $user['email'] = $email;
+                }
+            }
+
+            if(!empty($firstname)){
+                $user['firstname'] = $firstname;
+            }
+            if(!empty($lastname)){
+                $user['lastname'] = $lastname;
+            }
+            if(!empty($phonenumber)){
+                $user['phonenumber'] = $phonenumber;
+            }
+            if(!empty($address)){
+                $user['address'] = $address;
+            }
+            if(!empty($role)){
+                $user['role'] = $role;
+            }
+            if(!empty($data['password'])){
+                $user['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            }
+
+            $this->updateTable('user',['id' => $peopleId],$user);
+
+            http_response_code(200);
+            $this->api_status = 1;
+            $this->api_message = 'User updated successfully!';
+        }
+    }
+
+    public function remove_user(){
+
+        if (!$this->validateMethod('POST')) return;
+
+        $data = $_POST;
+        $userId = $this->requestData['client_id'] ?? NULL;
+        $loginUserRole = $this->requestData['role'] ?? NULL;
+        $peopleId = $data['people_id'] ?? 0;
+
+        
+        if($loginUserRole != 1){
+            http_response_code(403);
+            $this->api_status = 0;
+            $this->api_message = 'l_user_not_authorized';
+        }else if($peopleId == 0){
+            http_response_code(400);
+            $this->api_status = 0;
+            $this->api_message = 'l_user_id_required';
+        }else{
+
+            $this->sql = 'DELETE FROM `user` WHERE `id` = '.$peopleId;
+            $this->query();
+            $this->execute();
+
+            http_response_code(200);
+            $this->api_status = 1;
+            $this->api_message = 'User updated successfully!';
         }
     }
 }

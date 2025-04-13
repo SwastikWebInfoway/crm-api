@@ -7,9 +7,11 @@
     if (stristr($_SERVER["HTTP_ORIGIN"], "")) {
 
         define("DB_HOST", "localhost");
-        define("DB_USERNAME", "");
+        define("DB_USERNAME", "root");
         define("DB_PASSWORD", "");
-        define("DB_NAME","");
+        define("DB_NAME","crm");
+        define("IMAGE_URL", "http://localhost/crm-api/uploads");
+
 
     }else{
         define("DB_HOST", "localhost");
